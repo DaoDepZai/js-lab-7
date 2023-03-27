@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/bootstrap5.3/bootstrap-5.3.0-alpha1-dist/css/bootstrap.min.css">
+    <style>
+        .pop_up{
+/* position: relative; */
+display: none;
+position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+.info-pro, .loading{
+    position: relative;
+    background-color: #fff;
+    top: 15rem;
+    left: 54rem;
+}
+    </style>
+    <title>JS lab 7</title>
+</head>
+<body>
+    <section>
+        <div class="container">
+            <div class="row" id="list">
+                <div class="col-3">
+                    <div class="card" style="width: 18rem;"  >
+                        <img  class="card-img-top" src="..." alt="Card image cap">
+                        <div class="card-body" >
+                          <h5 class="card-title" id="title">Card title</h5>
+                          <p class="card-text" id="text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                          <a href="#" class="btn btn-primary">Go somewhere</a>
+                        </div>
+                      </div>
+                </div>  
+            </div>
+            <div class="pagination">
+                <div class="bg-fade d-flex">
+                    <div id="pre-but">
+                        <button class="btn btn-primary">Previous</button>
+                    </div>
+                    <div id="pag-list">
+                        
+                    </div>
+                    <div id="next-but">
+                        <button class="btn btn-primary">Next</button>
+                    </div>
+                </div>
+            </div>
+            <div class="pop_up" id="box-loading">
+
+                
+                    <div id="bg-fade"></div>
+                    <div class="spinner-border loading" role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                
+            </div>
+        </div>
+        <div class="pop_up" id="pop-up" onclick="exit_pop_up()">
+            <div class="pop-info">
+                <div class="info-pro" style="width: 18rem;" id="info-pro" >
+                    <img  class="card-img-top" src="..." alt="Card image cap">
+                    <div class="card-body" >
+                      <h5 class="card-title" id="title">Card title</h5>
+                      <p class="card-text" id="text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                      <a href="#" class="btn btn-primary" onclick="pop_up()">Go somewhere</a>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    </section>
+</body>
+<script type="text/javascript">
+    var page=1; 
+    function loadData(){
+        document.getElementById("box-loading").style.display="block";
+    var skip=(page-1)*12;
+        
+        var xtthp= new XMLHttpRequest();
+    xtthp.onload=()=>{
+        var rs= xtthp.responseText;
+        var data=JSON.parse(rs);
+        var html=``;
+        data.products.forEach(x => {
+            html+=`<div class="col-3 mb-2">
+                                <div class="card" style="width: 18rem;"  >
+                                    <img  class="card-img-top" src=${x.thumbnail} alt="Card image cap">
+                                    <div class="card-body" >
+                                      <h5 class="card-title" id="title">${x.title}</h5>
+                                      <p class="card-text" id="text">${x.description}</p>
+                                      <a href="#" class="btn btn-primary" onclick="pop_up(${x.id})">Go somewhere</a>
+                                    </div>
+                                  </div>
+                            </div>`
+        });
+        var pag_list=document.getElementById("pag-list");
+        let total_page=data.total%12==0?data.total/12:parseInt(data.total/12)+1;
+        
+        var pag_html=``;
+        for(var i=1;i<=total_page;i++) {
+            let active=page==i?"active":"";
+             pag_html+=`<a href="#" class="btn btn-primary ${active}" onclick="load_page(${i})">${i}</a>`;
+        }
+        pag_list.innerHTML=pag_html;
+        document.getElementById("list").innerHTML=html;
+        document.getElementById("box-loading").style.display="none";
+
+    }
+    xtthp.open("GET",`https://dummyjson.com/products?limit=12&skip=${skip}`)
+    xtthp.send();
+    }
+    loadData();
+    function load_page(i){
+        page=i;
+        console.log(page);
+        loadData();
+    }
+    function back_page(){
+        if(page>=1){
+            page--;
+            loadData();
+        }
+    }
+    function next_page(){
+        page++;
+        loadData();
+    }
+    function pop_up(i){
+        var xtthp= new XMLHttpRequest();
+    xtthp.onload=()=>{
+        var rs= xtthp.responseText;
+        var data=JSON.parse(rs);
+        var html=``;
+        
+            html+=`<div class="col-3 mb-2">
+                                <div class="card" style="width: 18rem;"  >
+                                    <img  class="card-img-top" src=${data.thumbnail} alt="Card image cap">
+                                    <div class="card-body" >
+                                      <h5 class="card-title" id="title">${data.title}</h5>
+                                      <p class="card-text" id="text">${data.description}</p>
+                                      <a href="#" class="btn btn-primary">Go somewhere</a>
+                                    </div>
+                                  </div>
+                            </div>`
+        
+        document.getElementById("info-pro").innerHTML=html;
+        document.getElementById("pop-up").style.display="block";
+       }
+    
+    xtthp.open("GET",`https://dummyjson.com/products/${i}`);
+    xtthp.send();
+    }
+    function exit_pop_up(){
+        document.getElementById("pop-up").style.display="none";
+    }
+    
+
+</script>
+</html>
