@@ -20,6 +20,7 @@ position: fixed; /* Stay in place */
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 .info-pro, .loading{
+    z-index: 9999;
     position: relative;
     background-color: #fff;
     top: 15rem;
@@ -46,13 +47,13 @@ position: fixed; /* Stay in place */
             <div class="pagination">
                 <div class="bg-fade d-flex">
                     <div id="pre-but">
-                        <button class="btn btn-primary">Previous</button>
+                        <button class="btn btn-primary" onclick="back_page()">Previous</button>
                     </div>
                     <div id="pag-list">
                         
                     </div>
                     <div id="next-but">
-                        <button class="btn btn-primary">Next</button>
+                        <button class="btn btn-primary" onclick="next_page()">Next</button>
                     </div>
                 </div>
             </div>
@@ -65,16 +66,20 @@ position: fixed; /* Stay in place */
                       </div>
                 
             </div>
+            
+                
+            
         </div>
-        <div class="pop_up" id="pop-up" onclick="exit_pop_up()">
+        <div class="pop_up" id="pop-up" >
             <div class="pop-info">
-                <div class="info-pro" style="width: 18rem;" id="info-pro" >
+                <div class="info-pro d-flex" style="width: 18rem;" id="info-pro" >
                     <img  class="card-img-top" src="..." alt="Card image cap">
                     <div class="card-body" >
                       <h5 class="card-title" id="title">Card title</h5>
                       <p class="card-text" id="text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
                       <a href="#" class="btn btn-primary" onclick="pop_up()">Go somewhere</a>
                     </div>
+                   
                   </div>
             </div>
         </div>
@@ -92,13 +97,13 @@ position: fixed; /* Stay in place */
         var data=JSON.parse(rs);
         var html=``;
         data.products.forEach(x => {
-            html+=`<div class="col-3 mb-2">
+            html+=`<div class="col-3 mb-2" onclick="pop_up(${x.id})">
                                 <div class="card" style="width: 18rem;"  >
                                     <img  class="card-img-top" src=${x.thumbnail} alt="Card image cap">
                                     <div class="card-body" >
                                       <h5 class="card-title" id="title">${x.title}</h5>
                                       <p class="card-text" id="text">${x.description}</p>
-                                      <a href="#" class="btn btn-primary" onclick="pop_up(${x.id})">Go somewhere</a>
+                                     
                                     </div>
                                   </div>
                             </div>`
@@ -136,23 +141,23 @@ position: fixed; /* Stay in place */
         loadData();
     }
     function pop_up(i){
+        event.preventDefault();
         var xtthp= new XMLHttpRequest();
     xtthp.onload=()=>{
         var rs= xtthp.responseText;
         var data=JSON.parse(rs);
         var html=``;
         
-            html+=`<div class="col-3 mb-2">
-                                <div class="card" style="width: 18rem;"  >
-                                    <img  class="card-img-top" src=${data.thumbnail} alt="Card image cap">
-                                    <div class="card-body" >
-                                      <h5 class="card-title" id="title">${data.title}</h5>
-                                      <p class="card-text" id="text">${data.description}</p>
-                                      <a href="#" class="btn btn-primary">Go somewhere</a>
-                                    </div>
-                                  </div>
-                            </div>`
-        
+        html+=`<div class="card "   >
+            <img  class="card-img-top" src=${data.thumbnail} alt="Card image cap">
+            <div class="card-body" >
+              <h5 class="card-title" id="title">${data.title}</h5>
+              <p class="card-text" id="text">${data.description}</p>
+              <a href="#" class="btn btn-danger" onclick="addToCart(${i})">Add to cart</a>
+              <div onclick="exit_pop_up()" class="mt-3"><a class="btn btn-primary" href="#">X</a></div>
+            </div>
+          </div>
+    `
         document.getElementById("info-pro").innerHTML=html;
         document.getElementById("pop-up").style.display="block";
        }
@@ -163,7 +168,39 @@ position: fixed; /* Stay in place */
     function exit_pop_up(){
         document.getElementById("pop-up").style.display="none";
     }
+    var cart=localStorage.getItem("cart");
+    if(cart == null){
+        cart= [];
+    }else{
+        cart=JSON.parse(cart);
+    }
+    function addToCart(x){
+        event.preventDefault();
+        let f=false;
+        for(let i=0;i<cart.length;i++){
+            if(x==cart[i].id){
+                f=true;
+                cart[i].buy_qty++;
+                localStorage.setItem('cart', JSON.stringify(cart));
+                break;
+            }
+        }
+        if(f==false){
+        var xhttp=new XMLHttpRequest();
+        xhttp.onload=function(){
+            var rs=xhttp.responseText;
+            var data=JSON.parse(rs);
+            cart.push(data);
+            data.buy_qty=1;
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+        xhttp.open("GET",`https://dummyjson.com/products/${x}`);
+        xhttp.send();
+        }
+        
+        alert("Thêm giỏ hàng thành công!");
+    }
     
-
+   
 </script>
 </html>
