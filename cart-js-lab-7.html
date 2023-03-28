@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/bootstrap5.3/bootstrap-5.3.0-alpha1-dist/css/bootstrap.min.css">
+    <title>Cart</title>
+</head>
+<body>
+    <section>
+        <div class="container">
+            <div class="row">
+                <div class="col-9">
+                    <table class="table">
+                        <thead>
+                            <th></th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Subtotal</th>
+                        </thead>
+                        <tbody id="list">
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col">
+                    <h2>Cart totals</h2>
+                    <h2 id="total"></h2>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+<script type="text/javascript">
+    var total = 0;
+    var cart= localStorage.getItem('cart');
+    if(cart==null){
+        cart=[];
+    }else
+    {
+        cart=JSON.parse(cart);
+    }
+    var html=``;
+     for(var i=0; i<cart.length; i++){
+        var count=cart[i].buy_qty;
+        total+=cart[i].price*count;
+        html+=`<tr>
+            <td><img width="150" class="img-thumbnail" src="${cart[i].thumbnail}"/></td>
+            <td>${cart[i].title}</td>
+            <td>${cart[i].price}$</td>
+            <td>
+                <a href="#" class="text-decoration-none fs-5 me-1" onclick="plus(${i})">+</a>
+                ${count}
+                <a href="#" class="text-decoration-none fs-5 ms-1" onclick="minus(${i})">-</a>
+            </td>
+            <td>${cart[i].price*count}$</td>
+            <td  ><a onclick="discard_item(${i})" href="#" class="text-decoration-none">X</a></td>
+
+        </tr>`;
+}
+            
+    document.getElementById("list").innerHTML=html;
+    document.getElementById("total").innerText+=total;
+    function plus(i){
+        console.log(cart[i].buy_qty);
+        cart[i].buy_qty++;
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+    function minus(i){
+        console.log(i);
+        if(cart[i].buy_qty>1){
+            cart[i].buy_qty--;
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+    }
+    function discard_item(i){
+        console.log(i)
+        console.log(cart.splice(i,1));
+        localStorage.setItem('cart', JSON.stringify(cart));
+        alert("Xóa sản phẩm thành công!")
+    }
+
+</script>
+</html>
