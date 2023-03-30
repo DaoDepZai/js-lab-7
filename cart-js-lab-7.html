@@ -9,7 +9,14 @@
 </head>
 <body>
     <section>
-        <div class="container">
+        <div class="container" >
+            <div class="row d-none" id="no-products">
+                <div class="col-6">
+                    <div class="alert alert-primary" role="alert">
+                        Không có sản phẩm nào trong giỏ hàng
+                    </div>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-9">
                     <table class="table">
@@ -19,6 +26,7 @@
                             <th>Price</th>
                             <th>Qty</th>
                             <th>Subtotal</th>
+                            <th></th>
                         </thead>
                         <tbody id="list">
                             
@@ -30,11 +38,15 @@
                     <h2 id="total"></h2>
                 </div>
             </div>
+            <a href="#" onclick="removeAll()">Remove All</a>
         </div>
     </section>
 </body>
 <script type="text/javascript">
-    var total = 0;
+   
+   load_data();
+    function load_data(){
+        var total = 0;
     var cart= localStorage.getItem('cart');
     if(cart==null){
         cart=[];
@@ -42,45 +54,113 @@
     {
         cart=JSON.parse(cart);
     }
-    var html=``;
-     for(var i=0; i<cart.length; i++){
-        var count=cart[i].buy_qty;
-        total+=cart[i].price*count;
-        html+=`<tr>
-            <td><img width="150" class="img-thumbnail" src="${cart[i].thumbnail}"/></td>
-            <td>${cart[i].title}</td>
-            <td>${cart[i].price}$</td>
-            <td>
-                <a href="#" class="text-decoration-none fs-5 me-1" onclick="plus(${i})">+</a>
-                ${count}
-                <a href="#" class="text-decoration-none fs-5 ms-1" onclick="minus(${i})">-</a>
-            </td>
-            <td>${cart[i].price*count}$</td>
-            <td  ><a onclick="discard_item(${i})" href="#" class="text-decoration-none">X</a></td>
+    if(cart.length == 0){
+        console.log(document.getElementById("no-products")+"1");
+    // document.getElementById("no-products").style.display="block";
 
-        </tr>`;
-}
-            
+    }
+    else{
+
+        var html=``;
+        for(var i=0; i<cart.length; i++){
+         var count=cart[i].buy_qty;
+         var price= cart[i].price;
+         total+=price*count;
+         html+=`<tr>
+             <td><img width="150" class="img-thumbnail" src="${cart[i].thumbnail}"/></td>
+             <td>${cart[i].title}</td>
+             <td>$${cart[i].price}</td>
+             <td>
+                 <a href="#" class="text-decoration-none fs-5 me-1 border border-primary px-1 " onclick="plus(${i})">+</a>
+                 ${count}
+                 <a href="#" class="text-decoration-none fs-5 ms-1 border border-primary px-1" onclick="minus(${i})">-</a>
+                 <div><i>Số hàng khả dụng: ${cart[i].stock}</i></div>
+             </td>
+             
+             <td>$${price*count}</td>
+             <td  ><a onclick="discard_item(${i})" href="#" class="text-decoration-none">X</a></td>
+ 
+         </tr>`;
+        }
+             
     document.getElementById("list").innerHTML=html;
-    document.getElementById("total").innerText+=total;
+    document.getElementById("total").innerText=total;
+    }
+    // location.reload();
+    }
     function plus(i){
-        console.log(cart[i].buy_qty);
+        var cart= localStorage.getItem('cart');
+    if(cart==null){
+        cart=[];
+    }else
+    {
+        cart=JSON.parse(cart);
+    }
+        event.preventDefault();
+        
+        if(cart[i].stock>cart[i].buy_qty){
         cart[i].buy_qty++;
         localStorage.setItem('cart', JSON.stringify(cart));
+        load_data();
+        }else{
+            alert("Out of stock!");
+        }
+        
     }
     function minus(i){
-        console.log(i);
+        var cart= localStorage.getItem('cart');
+    if(cart==null){
+        cart=[];
+    }else
+    {
+        cart=JSON.parse(cart);
+    }
+    event.preventDefault();
         if(cart[i].buy_qty>1){
             cart[i].buy_qty--;
             localStorage.setItem('cart', JSON.stringify(cart));
         }
+        else{
+            if(confirm("Bạn có muốn xóa hay không?")){
+                discard_item();
+            }
+        }
+        load_data();
     }
     function discard_item(i){
-        console.log(i)
-        console.log(cart.splice(i,1));
-        localStorage.setItem('cart', JSON.stringify(cart));
-        alert("Xóa sản phẩm thành công!")
+        var cart= localStorage.getItem('cart');
+    if(cart==null){
+        cart=[];
+    }else
+    {
+        cart=JSON.parse(cart);
     }
-
+        var cart= localStorage.getItem('cart');
+    if(cart==null){
+        cart=[];
+    }else
+    {
+        cart=JSON.parse(cart);
+    }
+    if(confirm("Bạn có muốn xóa hay không?")){
+        cart.splice(i,1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        alert("Xóa sản phẩm thành công!");
+       load_data();
+    }
+        
+        
+    }
+    function removeAll(){
+        var cart=localStorage.getItem('cart');
+        if(cart==null){
+            cart=[];
+        }else{
+            cart=JSON.parse(cart);
+        }
+        cart=[];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        load_data();
+    }
 </script>
 </html>

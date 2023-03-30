@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/bootstrap5.3/bootstrap-5.3.0-alpha1-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/font_awesome/fontawesome-free-6.3.0-web/css/all.min.css">
     <style>
         .pop_up{
 /* position: relative; */
@@ -39,6 +40,7 @@ position: fixed; /* Stay in place */
                         <div class="card-body" >
                           <h5 class="card-title" id="title">Card title</h5>
                           <p class="card-text" id="text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                          <span class="navbar-toggler-icon heart" ></span>
                           <a href="#" class="btn btn-primary">Go somewhere</a>
                         </div>
                       </div>
@@ -89,25 +91,38 @@ position: fixed; /* Stay in place */
     var page=1; 
     function loadData(){
         document.getElementById("box-loading").style.display="block";
-    var skip=(page-1)*12;
+        var favor=localStorage.getItem("favor");
+        if(favor==null){
+            favor=[];
+        }else{
+            favor=JSON.parse(favor);
+        }
         
+        var skip=(page-1)*12;
         var xtthp= new XMLHttpRequest();
-    xtthp.onload=()=>{
+        xtthp.onload=()=>{
         var rs= xtthp.responseText;
         var data=JSON.parse(rs);
         var html=``;
-        data.products.forEach(x => {
-            html+=`<div class="col-3 mb-2" onclick="pop_up(${x.id})">
-                                <div class="card" style="width: 18rem;"  >
-                                    <img  class="card-img-top" src=${x.thumbnail} alt="Card image cap">
-                                    <div class="card-body" >
-                                      <h5 class="card-title" id="title">${x.title}</h5>
-                                      <p class="card-text" id="text">${x.description}</p>
-                                     
-                                    </div>
-                                  </div>
-                            </div>`
-        });
+        data.products.forEach((x,index) => {
+            let heart=`<i class="fa-regular fa-heart" style="color: #ff0004;cursor:pointer" onclick="addFavor(${x.id},${index})"></i>`
+                for(let i=0; i<favor.length; i++){
+                    if(favor[i].id==x.id){
+                    heart=`<i class="fa-solid fa-heart" style="color: #fa0004;cursor:pointer" onclick="removeFavor(${x.id},${index})"></i>`;
+                }
+            }
+                html+=`<div class="col-3 mb-2" onclick="pop_up(${x.id})">
+                                    <div class="card" style="width: 18rem;"  >
+                                        <img  class="card-img-top" src=${x.thumbnail} alt="Card image cap">
+                                        <div class="card-body" >
+                                          <h5 class="card-title" id="title">${x.title}</h5>
+                                          <p class="card-text" id="text">${x.description}</p>
+                                          <a href="#" style="color: red">${x.price}</a>
+                                          <span class="navbar-toggler-icon heart" >${heart}</span>
+                                          </div>
+                                      </div>
+                                </div>`
+            });
         var pag_list=document.getElementById("pag-list");
         let total_page=data.total%12==0?data.total/12:parseInt(data.total/12)+1;
         
@@ -147,7 +162,6 @@ position: fixed; /* Stay in place */
         var rs= xtthp.responseText;
         var data=JSON.parse(rs);
         var html=``;
-        
         html+=`<div class="card "   >
             <img  class="card-img-top" src=${data.thumbnail} alt="Card image cap">
             <div class="card-body" >
@@ -180,9 +194,15 @@ position: fixed; /* Stay in place */
         for(let i=0;i<cart.length;i++){
             if(x==cart[i].id){
                 f=true;
+                if(cart[i].buy_qty<cart[i].stock){
                 cart[i].buy_qty++;
                 localStorage.setItem('cart', JSON.stringify(cart));
                 break;
+                alert("Thêm giỏ hàng thành công!");
+                }
+                else{
+                    alert("Out of stock!");
+                }
             }
         }
         if(f==false){
@@ -193,14 +213,59 @@ position: fixed; /* Stay in place */
             cart.push(data);
             data.buy_qty=1;
             localStorage.setItem('cart', JSON.stringify(cart));
+            alert("Thêm giỏ hàng thành công!");
         }
         xhttp.open("GET",`https://dummyjson.com/products/${x}`);
         xhttp.send();
         }
         
-        alert("Thêm giỏ hàng thành công!");
     }
-    
+    function addFavor(x,a){
+        window.pop_up=function(){
+            return false;
+        }
+        console.log("addFavor")
+        var favor=localStorage.getItem("favor");
+        if(favor==null){
+            favor=[];
+        }else{
+            favor=JSON.parse(favor);
+        }
+        for(let i=0; i<favor.length; i++){
+            if(x==favor[i].id){
+                favor.splice(i,1);
+                localStorage.setItem("favor",JSON.stringify(favor));
+            }
+        }
+            var xtthp= new XMLHttpRequest();
+            xtthp.onload=()=>{
+                var rs= xtthp.responseText;
+                var data=JSON.parse(rs);
+                favor.push(data);
+                localStorage.setItem("favor",JSON.stringify(favor));
+                alert("Đã thêm sản phẩm vào danh sách yêu thích!");
+                document.getElementsByClassName("heart")[a].innerHTML=`<i class="fa-solid fa-heart" style="color: #fa0004;cursor:pointer" onclick="removeFavor(${x},${a})"></i>`;
+            }
+            xtthp.open("GET",`https://dummyjson.com/products/${x}`);
+            xtthp.send();
+    }
+    function removeFavor(x,a){
+        window.pop_up=()=>false;
+        var favor=localStorage.getItem("favor");
+        if(favor==null){
+            favor=[];
+        }else{
+            favor=JSON.parse(favor);
+        }
+        for(let i=0;i<favor.length;i++){
+            if(favor[i].id==x){
+                favor.splice(i,1);
+                localStorage.setItem("favor",JSON.stringify(favor));
+                alert("Đã xóa sản phẩm khỏi danh sách yêu thích!");
+            }
+        }
+        document.getElementsByClassName("heart")[a].innerHTML=`<i class="fa-regular fa-heart" style="color: #ff0004;cursor:pointer" onclick="addFavor(${x},${a})"></i>`;
+    }
    
 </script>
 </html>
